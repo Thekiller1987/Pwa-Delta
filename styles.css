@@ -1,0 +1,316 @@
+/* --- VARIABLES Y ESTÉTICA DELTALINK (DARK THEME) --- */
+@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap');
+
+:root {
+    --primary-color: #e63268; /* Magenta del logo */
+    --secondary-color: #f7195f;
+    --dark-bg-primary: #1a1a2e; /* Fondo principal oscuro */
+    --dark-bg-secondary: #0f0f1d; 
+    --text-light: #f0f0f0; 
+    --accent-success: #28a745; 
+    --accent-info: #17a2b8;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --font-family-spartan: 'League Spartan', sans-serif;
+    --transition-speed: 0.3s;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--font-family-spartan);
+}
+
+body {
+    background-color: var(--dark-bg-primary);
+    color: var(--text-light);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+strong { color: var(--primary-color); font-weight: 700; }
+
+/* --- UTILIDADES Y GENERAL --- */
+.container {
+    width: 95%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px 0;
+    flex-grow: 1;
+}
+.message-box {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    display: none;
+    opacity: 0;
+    transition: opacity var(--transition-speed);
+}
+.message-box.visible { opacity: 1; display: block; }
+.message-box.success { background-color: var(--accent-success); }
+.message-box.error { background-color: #dc3545; }
+.message-box.info { background-color: var(--primary-color); }
+.loading {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.5em;
+    color: var(--primary-color);
+}
+
+/* --- HEADER --- */
+header {
+    background-color: var(--dark-bg-secondary);
+    padding: 15px 5%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+.logo-img {
+    height: 50px;
+    filter: drop-shadow(0 0 5px var(--primary-color));
+    animation: pulse 2s infinite alternate;
+}
+@keyframes pulse {
+    from { opacity: 0.8; }
+    to { opacity: 1; }
+}
+.user-controls {
+    display: flex;
+    align-items: center;
+}
+.user-info {
+    font-size: 1em;
+    padding-right: 15px;
+    font-weight: 500;
+}
+.logout-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color var(--transition-speed), transform var(--transition-speed);
+}
+.logout-btn:hover { background-color: #a01040; transform: translateY(-2px); }
+
+/* --- LOGIN SCREEN --- */
+#login-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--dark-bg-primary);
+    animation: fadeIn 1s ease-out;
+}
+.login-box {
+    background-color: var(--dark-bg-secondary);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    border-top: 5px solid var(--primary-color);
+    transform: scale(0.95);
+    animation: bounceIn 0.8s forwards;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bounceIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    80% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); }
+}
+
+.login-box h2 {
+    color: var(--primary-color);
+    margin-bottom: 30px;
+    font-size: 1.8em;
+    text-transform: uppercase;
+}
+.login-box input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: #2c3e50;
+    color: var(--text-light);
+    font-size: 1em;
+    transition: border-color var(--transition-speed);
+}
+.login-box input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+.login-box button {
+    background-color: var(--accent-success);
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    width: 100%;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color var(--transition-speed), transform var(--transition-speed);
+}
+.login-box button:hover { background-color: #1e7e34; transform: translateY(-3px); }
+
+/* --- DASHBOARD --- */
+#dashboard-screen {
+    display: none;
+}
+
+h2.dashboard-title {
+    color: var(--primary-color);
+    font-size: 2.5em;
+    margin-top: 20px;
+    margin-bottom: 30px;
+    text-align: center;
+    border-bottom: 3px solid var(--border-color);
+    padding-bottom: 10px;
+    text-transform: uppercase;
+}
+
+/* --- LEAD CARD GRID --- */
+#leads-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+    padding-bottom: 40px;
+}
+
+.lead-card {
+    background-color: var(--dark-bg-secondary);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+    border-top: 5px solid var(--primary-color);
+    transition: transform 0.3s, box-shadow 0.3s;
+    animation: cardFadeIn 0.5s ease-out forwards;
+    opacity: 0;
+}
+@keyframes cardFadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.lead-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+}
+
+.lead-card h3 {
+    color: var(--text-light);
+    font-size: 1.6em;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.lead-card p {
+    font-size: 0.95em;
+    color: rgba(240, 240, 240, 0.8);
+    margin-bottom: 8px;
+}
+
+.lead-card strong {
+    display: inline-block;
+    width: 100px;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* --- Controles de Gestión --- */
+.management-controls {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed var(--border-color);
+}
+
+.control-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.control-group label {
+    width: 120px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.management-controls select,
+.management-controls input[type="date"] {
+    padding: 8px;
+    border-radius: 5px;
+    background-color: var(--dark-bg-primary);
+    color: var(--text-light);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    font-size: 0.95em;
+    flex-grow: 1;
+}
+
+.save-btn {
+    background-color: var(--accent-success);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    width: 100%;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: background-color var(--transition-speed), transform var(--transition-speed);
+}
+.save-btn:hover { background-color: #1e7e34; transform: translateY(-2px); }
+.save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* --- BADGES DE ESTADO --- */
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 600;
+    white-space: nowrap;
+    text-align: center;
+}
+.status-Pendiente { background-color: var(--secondary-color); }
+.status-En-Proceso { background-color: var(--accent-info); }
+.status-Finalizado { 
+    background-color: var(--accent-success); 
+    animation: pulse-green 1s infinite;
+}
+.status-Sin-asignar { background-color: #6c757d; }
+
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
+/* --- MEDIA QUERIES (Responsividad) --- */
+@media (max-width: 600px) {
+    .container { padding: 20px 10px; }
+    .login-box { padding: 30px 20px; }
+    #leads-grid { grid-template-columns: 1fr; }
+    .lead-card { padding: 15px; }
+    .lead-card h3 { font-size: 1.4em; }
+    .control-group { flex-direction: column; align-items: flex-start; }
+    .control-group label { width: 100%; margin-bottom: 5px; }
+    .management-controls select, 
+    .management-controls input[type="date"] { width: 100%; }
+    .user-info { font-size: 0.9em; flex-direction: column; align-items: flex-end; }
+    .logout-btn { margin-left: 0; margin-top: 5px; }
+    h2.dashboard-title { font-size: 2em; text-align: center; }
+}

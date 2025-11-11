@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DELTALINK - Panel de Gestión</title>
+    <!-- Configuración PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="apple-touch-icon" href="logo.png">
+    
+    <!-- Estilos y Fuente -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+    <!-- 1. LOGIN SCREEN -->
+    <main id="login-screen">
+        <div class="login-box">
+            <img src="logo.png" alt="Logo DELTALINK" class="logo-img">
+            <h2>Acceso a Gestión de Proyectos</h2>
+            <div id="login-message" class="message-box" style="display: none;"></div>
+            <form id="login-form">
+                <input type="text" id="username" placeholder="Usuario" required>
+                <input type="password" id="password" placeholder="Clave" required>
+                <button type="submit" id="login-button">Iniciar Sesión</button>
+            </form>
+        </div>
+    </main>
+
+    <!-- 2. DASHBOARD SCREEN -->
+    <div id="dashboard-screen">
+        <header>
+            <img src="logo.png" alt="Logo DELTALINK" class="logo-img">
+            <div class="user-controls">
+                <div class="user-info">
+                    Bienvenido, <span id="user-name"></span>
+                </div>
+                <button id="logout-button" class="logout-btn">Cerrar Sesión</button>
+            </div>
+        </header>
+        
+        <div class="container">
+            <h2 class="dashboard-title"><i class="fas fa-chart-line"></i> Control de Proyectos y Asignaciones</h2>
+            <div id="dashboard-message" class="message-box" style="display: none;"></div>
+            
+            <div id="leads-grid" class="loading">Cargando Leads...</div>
+        </div>
+    </div>
+
+    <!-- 3. Archivo JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>
