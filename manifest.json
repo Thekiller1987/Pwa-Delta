@@ -1,26 +1,27 @@
 {
-    "name": "DELTALINK CRM",
-    "short_name": "DL-CRM",
-    "description": "Panel de Gestión de Proyectos y Leads de DELTALINK.",
-    "start_url": "/Deltalink Pwa/index.html",
-    "display": "standalone",
-    "background_color": "#1a1a2e",
-    "theme_color": "#e63268",
-    "icons": [
-        {
-            "src": "logo.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        },
-        {
-            "src": "logo.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "logo.png",
-            "sizes": "144x144",
-            "type": "image/png"
-        }
-    ]
+  "name": "DELTALINK CRM",
+  "short_name": "DL-CRM",
+  "description": "Panel de Gestión de Proyectos y Leads de DELTALINK.",
+  "start_url": ".",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#e63268",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    }
+  ]
 }
