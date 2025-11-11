@@ -132,8 +132,7 @@ function showLogin() {
 
 function showDashboard() {
     document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('dashboard-screen').style.display = 'block';
-    document.getElementById('user-name').textContent = State.userName;
+    document.getElementById('dashboard-screen').style   .display = 'block';
     
     // --- LÓGICA DE EVENTOS PRINCIPALES ---
     const grid = document.getElementById('leads-grid');
