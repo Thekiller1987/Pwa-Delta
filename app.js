@@ -69,14 +69,7 @@ async function fetchAPI(action, data = {}) {
     }
 }
 
-// --- MODAL DE CONFIRMACIÓN (NUEVO) ---
-/**
- * Muestra un modal de confirmación personalizado.
- * @param {string} title - El título del modal (ej: "Confirmar Eliminación").
- * @param {string} message - La pregunta principal (ej: "¿Estás seguro?").
- * @param {string} details - Texto adicional (ej: "Lead: Juan Pérez").
- * @param {function} onConfirm - Callback que se ejecuta si el usuario presiona "Sí".
- */
+// --- MODAL DE CONFIRMACIÓN ---
 function showCustomConfirm(title, message, details, onConfirm) {
     const overlay = document.getElementById('custom-confirm-overlay');
     const modal = document.getElementById('custom-confirm-modal');
@@ -86,23 +79,19 @@ function showCustomConfirm(title, message, details, onConfirm) {
     const yesBtn = document.getElementById('custom-confirm-yes');
     const noBtn = document.getElementById('custom-confirm-no');
 
-    // Asignar contenido
     titleEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${title}`;
     messageEl.textContent = message;
     detailsEl.textContent = details;
 
     overlay.classList.add('visible');
 
-    // Usamos .cloneNode(true) para limpiar event listeners antiguos y evitar clics múltiples
     const newYesBtn = yesBtn.cloneNode(true);
     yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
-
     const newNoBtn = noBtn.cloneNode(true);
     noBtn.parentNode.replaceChild(newNoBtn, noBtn);
 
-    // Asignar nuevos listeners
     newYesBtn.addEventListener('click', () => {
-        onConfirm(); // Ejecutar la acción
+        onConfirm();
         overlay.classList.remove('visible');
     });
 
@@ -110,13 +99,12 @@ function showCustomConfirm(title, message, details, onConfirm) {
         overlay.classList.remove('visible');
     });
 
-    // Personalizar botón de confirmación para eliminación
     if (title.toLowerCase().includes('eliminar')) {
         newYesBtn.textContent = "Sí, Eliminar";
-        newYesBtn.style.backgroundColor = '#dc3545'; // Rojo
+        newYesBtn.style.backgroundColor = '#dc3545';
     } else {
         newYesBtn.textContent = "Sí, Guardar";
-        newYesBtn.style.backgroundColor = 'var(--accent-success)'; // Verde
+        newYesBtn.style.backgroundColor = 'var(--accent-success)';
     }
 }
 
@@ -142,6 +130,13 @@ function showDashboard() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('dashboard-screen').style.display = 'block';
     document.getElementById('user-name').textContent = State.userName;
+    
+    // --- NUEVO: Añadido listener de eventos para la grilla ---
+    // Usamos delegación de eventos para manejar clics en elementos dinámicos
+    const grid = document.getElementById('leads-grid');
+    grid.addEventListener('click', handleGridClick);
+    grid.addEventListener('change', handleGridChange);
+    
     loadDashboardData();
 }
 
@@ -188,7 +183,6 @@ async function loadDashboardData() {
         return;
     }
 
-    // Ordenar: Pendientes primero, luego En Proceso, luego Finalizados
     State.leads = result.leads.sort((a, b) => {
         const statusOrder = { 'Pendiente': 0, 'En Proceso': 1, 'Finalizado': 2 };
         return (statusOrder[a.estado] || 0) - (statusOrder[b.estado] || 0);
@@ -213,7 +207,6 @@ function renderLeads(leads) {
         const isFinalized = lead.estado === 'Finalizado';
         
         const card = document.createElement('div');
-        // --- MODIFICADO: Añadida clase 'finalized' ---
         card.className = `lead-card ${isFinalized ? 'finalized' : ''}`;
         card.setAttribute('data-row-id', lead.rowId);
         card.style.animationDelay = `${index * 0.05}s`;
@@ -221,16 +214,28 @@ function renderLeads(leads) {
         const formattedDate = formatLeadDate(lead.fecha);
         const completionDateDisplay = formatDateDisplay(lead.fechaFinalizacion);
         
-        // --- MODIFICADO: Lógica para selector múltiple ---
-        // Convierte el string "User A,User B" en un array ["User A", "User B"]
-        const assignedPeople = lead.asignadoA ? lead.asignadoA.split(',') : [];
-        const isUnassigned = assignedPeople.length === 0 || assignedPeople[0] === 'Sin asignar';
+        // --- LÓGICA DE ASIGNACIÓN MEJORADA ---
+        const assignedPeople = (lead.asignadoA && lead.asignadoA !== 'Sin asignar') ? lead.asignadoA.split(',') : [];
+        
+        // 1. Generar las etiquetas (pills) para las personas ya asignadas
+        const pillsHTML = assignedPeople.map(name => `
+            <span class="assignee-pill" data-name="${name}">
+                ${name}
+                <span class="remove-assignee" data-name="${name}" data-row-id="${lead.rowId}">
+                    <i class="fas fa-times"></i>
+                </span>
+            </span>
+        `).join('');
 
-        const personnelOptions = State.personnel.map(name => 
-            // Comprueba si el nombre está en el array de personas asignadas
-            `<option value="${name}" ${assignedPeople.includes(name) ? 'selected' : ''}>${name}</option>`
-        ).join('');
-        // --- FIN DE MODIFICACIÓN ---
+        // 2. Generar el placeholder "Sin asignar" si no hay pills
+        const placeholderHTML = assignedPeople.length === 0 ? '<p class="unassigned-placeholder">Sin asignar</p>' : '';
+        
+        // 3. Generar las opciones para el <select> de "Añadir"
+        // (Solo mostrar personas que NO están ya asignadas)
+        const availablePeople = State.personnel.filter(name => !assignedPeople.includes(name));
+        const optionsHTML = availablePeople.map(name => `<option value="${name}">${name}</option>`).join('');
+        // --- FIN LÓGICA ASIGNACIÓN ---
+
 
         card.innerHTML = `
             <h3>
@@ -244,12 +249,18 @@ function renderLeads(leads) {
             <p style="margin-top: 10px;"><strong>Mensaje:</strong> ${lead.mensaje || 'N/A'}</p>
             
             <div class="management-controls">
-                <div class="control-group">
+                <div class="control-group align-top">
                     <label>Asignado a:</label>
-                    <select class="assignee-select" id="assignee-${lead.rowId}" ${isFinalized ? 'disabled' : ''} multiple>
-                        <option value="Sin asignar" ${isUnassigned ? 'selected' : ''}>— Sin asignar —</option>
-                        ${personnelOptions}
-                    </select>
+                    <div class="assignee-container">
+                        <div class="assigned-pills" id="pills-${lead.rowId}">
+                            ${pillsHTML}
+                            ${placeholderHTML}
+                        </div>
+                        <select class="assignee-add-select" data-row-id="${lead.rowId}" ${isFinalized ? 'disabled' : ''}>
+                            <option value="">— Asignar a otra persona —</option>
+                            ${optionsHTML}
+                        </select>
+                    </div>
                 </div>
 
                 <div class="control-group">
@@ -280,47 +291,130 @@ function renderLeads(leads) {
         
         grid.appendChild(card);
     });
-
-    // --- MODIFICADO: Añadir listeners para Guardar y Eliminar ---
-    document.querySelectorAll('.save-btn').forEach(button => {
-        button.addEventListener('click', handleSave);
-    });
-
-    document.querySelectorAll('.delete-btn').forEach(button => {
-        button.addEventListener('click', handleDelete);
-    });
+    
+    // NOTA: Los event listeners ahora se manejan por delegación en showDashboard()
 }
 
-async function handleSave(e) {
-    const button = e.target;
-    const rowId = button.getAttribute('data-row-id');
+// --- NUEVO: Manejador de eventos global para la grilla ---
+function handleGridClick(e) {
+    const target = e.target;
+
+    // Botón "GUARDAR"
+    if (target.classList.contains('save-btn')) {
+        handleSave(target);
+    }
+    
+    // Botón "ELIMINAR"
+    if (target.classList.contains('delete-btn')) {
+        handleDelete(target);
+    }
+
+    // Botón "X" en una etiqueta (pill)
+    // Usamos .closest() porque el clic puede ser en el <i> o en el <span>
+    const removeBtn = target.closest('.remove-assignee');
+    if (removeBtn) {
+        const name = removeBtn.dataset.name;
+        const rowId = removeBtn.dataset.rowId;
+        removeAssigneePill(name, rowId);
+    }
+}
+
+// --- NUEVO: Manejador de eventos para <select> ---
+function handleGridChange(e) {
+    const target = e.target;
+
+    // Menú desplegable "Asignar a otra persona"
+    if (target.classList.contains('assignee-add-select')) {
+        const name = target.value;
+        if (!name) return; // Si seleccionan la opción default
+        
+        const rowId = target.dataset.rowId;
+        addAssigneePill(name, rowId);
+        
+        // Resetear el select
+        target.value = '';
+    }
+}
+
+// --- NUEVA LÓGICA DE UI: Añadir/Quitar Pills ---
+
+function addAssigneePill(name, rowId) {
+    const pillsContainer = document.getElementById(`pills-${rowId}`);
+    const addSelect = document.querySelector(`.assignee-add-select[data-row-id="${rowId}"]`);
+
+    // 1. Remover el placeholder "Sin asignar"
+    const placeholder = pillsContainer.querySelector('.unassigned-placeholder');
+    if (placeholder) {
+        placeholder.remove();
+    }
+
+    // 2. Crear y añadir la nueva etiqueta (pill)
+    const pill = document.createElement('span');
+    pill.className = 'assignee-pill';
+    pill.dataset.name = name;
+    pill.innerHTML = `
+        ${name}
+        <span class="remove-assignee" data-name="${name}" data-row-id="${rowId}">
+            <i class="fas fa-times"></i>
+        </span>
+    `;
+    pillsContainer.appendChild(pill);
+
+    // 3. Remover el nombre del <select> de "Añadir"
+    const optionToRemove = addSelect.querySelector(`option[value="${name}"]`);
+    if (optionToRemove) {
+        optionToRemove.remove();
+    }
+}
+
+function removeAssigneePill(name, rowId) {
+    const pillsContainer = document.getElementById(`pills-${rowId}`);
+    const addSelect = document.querySelector(`.assignee-add-select[data-row-id="${rowId}"]`);
+
+    // 1. Encontrar y remover la etiqueta (pill)
+    const pillToRemove = pillsContainer.querySelector(`.assignee-pill[data-name="${name}"]`);
+    if (pillToRemove) {
+        pillToRemove.remove();
+    }
+
+    // 2. Añadir el nombre de vuelta al <select> de "Añadir"
+    const optionExists = addSelect.querySelector(`option[value="${name}"]`);
+    if (!optionExists) {
+        const newOption = document.createElement('option');
+        newOption.value = name;
+        newOption.textContent = name;
+        addSelect.appendChild(newOption);
+    }
+
+    // 3. Si no quedan más pills, mostrar el placeholder "Sin asignar"
+    if (pillsContainer.querySelectorAll('.assignee-pill').length === 0) {
+        pillsContainer.innerHTML = '<p class="unassigned-placeholder">Sin asignar</p>';
+    }
+}
+
+
+// --- LÓGICA DE GUARDAR Y ELIMINAR (ACTUALIZADA) ---
+
+async function handleSave(button) {
+    const rowId = button.dataset.rowId;
     const card = button.closest('.lead-card');
     
-    // --- MODIFICADO: Obtener valores del select múltiple ---
-    const assigneeSelect = card.querySelector(`#assignee-${rowId}`);
-    // Crea un array con los valores de todas las opciones seleccionadas
-    const selectedAssignees = Array.from(assigneeSelect.selectedOptions).map(option => option.value);
-    
+    // --- LÓGICA DE GUARDADO MEJORADA ---
+    // 1. Obtener todos los nombres de las etiquetas (pills)
+    const pills = card.querySelectorAll('.assignee-pill');
+    const assignedNames = Array.from(pills).map(pill => pill.dataset.name);
+
     let assignedToValue;
-    // Si 'Sin asignar' está seleccionado (incluso con otros), o no hay nada, prioriza 'Sin asignar'
-    if (selectedAssignees.includes('Sin asignar') || selectedAssignees.length === 0) {
+    if (assignedNames.length === 0) {
         assignedToValue = 'Sin asignar';
-        // Opcional: Deseleccionar otros si "Sin asignar" fue elegido
-        if(selectedAssignees.length > 1) {
-             Array.from(assigneeSelect.options).forEach(opt => {
-                opt.selected = (opt.value === 'Sin asignar');
-             });
-        }
     } else {
-        // Une los nombres con comas: "User A,User B"
-        assignedToValue = selectedAssignees.join(','); 
+        assignedToValue = assignedNames.join(','); // "User A,User B"
     }
-    // --- FIN DE MODIFICACIÓN ---
+    // --- FIN LÓGICA MEJORADA ---
 
     const status = card.querySelector(`#status-${rowId}`).value;
     const completionDate = card.querySelector(`#date-${rowId}`).value;
     
-    // Validación
     if (assignedToValue === 'Sin asignar' && (status === 'En Proceso' || status === 'Finalizado')) {
          showMessage('dashboard-message', 'No se puede poner "En Proceso" o "Finalizado" sin asignar a alguien.', 'info');
          return;
@@ -332,11 +426,11 @@ async function handleSave(e) {
 
     button.textContent = 'Guardando...';
     button.disabled = true;
-    card.querySelector('.delete-btn').disabled = true; // Deshabilitar ambos
+    card.querySelector('.delete-btn').disabled = true;
 
     const updateData = {
         rowId,
-        assignedTo: assignedToValue, // Envía el string con comas
+        assignedTo: assignedToValue,
         status: status,
         completionDate: completionDate 
     };
@@ -345,34 +439,27 @@ async function handleSave(e) {
 
     if (result.success) {
         showMessage('dashboard-message', result.message, 'success');
-        // Recarga los datos para reflejar el cambio "en tiempo real" (sin recargar página)
-        loadDashboardData(); 
+        loadDashboardData(); // Recargar todo para asegurar consistencia
     } else {
         showMessage('dashboard-message', result.message, 'error');
         button.textContent = 'Error: Reintentar';
         button.disabled = false;
-        // Habilita el botón de eliminar solo si no estaba finalizado
         if(status !== 'Finalizado') {
             card.querySelector('.delete-btn').disabled = false;
         }
     }
 }
 
-// --- NUEVA FUNCIÓN: Manejar Eliminación ---
-async function handleDelete(e) {
-    const button = e.target;
-    const rowId = button.getAttribute('data-row-id');
+async function handleDelete(button) {
+    const rowId = button.dataset.rowId;
     const card = button.closest('.lead-card');
     const leadName = card.querySelector('.lead-name').textContent.trim();
 
-    // Usar el nuevo modal de confirmación
     showCustomConfirm(
-        "Confirmar Eliminación", // Título
-        `¿Estás seguro de que deseas eliminar este lead?`, // Mensaje
-        `Lead: "${leadName}" (Fila ${rowId}). Esta acción no se puede deshacer.`, // Detalles
-        async () => { // Callback (lo que pasa si dice "Sí")
-            
-            // Mostrar estado de carga en la tarjeta
+        "Confirmar Eliminación",
+        `¿Estás seguro de que deseas eliminar este lead?`,
+        `Lead: "${leadName}" (Fila ${rowId}). Esta acción no se puede deshacer.`,
+        async () => {
             card.style.opacity = '0.5';
             button.disabled = true;
             card.querySelector('.save-btn').disabled = true;
@@ -381,7 +468,6 @@ async function handleDelete(e) {
 
             if (result.success) {
                 showMessage('dashboard-message', result.message, 'success');
-                // Animar y eliminar la tarjeta para feedback instantáneo ("tiempo real")
                 card.style.transition = 'opacity 0.3s ease, transform 0.3s ease, height 0.3s ease, padding 0.3s ease, margin 0.3s ease';
                 card.style.opacity = '0';
                 card.style.transform = 'scale(0.9)';
@@ -392,10 +478,8 @@ async function handleDelete(e) {
                 card.style.marginBottom = '0px';
                 card.style.border = 'none';
                 
-                // Esperar a que termine la animación para eliminar el elemento del DOM
                 setTimeout(() => {
                     card.remove();
-                    // Opcional: Recargar todo si se borró el último item
                     if (document.querySelectorAll('.lead-card').length === 0) {
                         renderLeads([]);
                     }
@@ -403,7 +487,7 @@ async function handleDelete(e) {
                  
             } else {
                 showMessage('dashboard-message', result.message, 'error');
-                card.style.opacity = '1'; // Restaurar tarjeta si falla
+                card.style.opacity = '1';
                 button.disabled = false;
                 if (!card.classList.contains('finalized')) {
                     card.querySelector('.save-btn').disabled = false;

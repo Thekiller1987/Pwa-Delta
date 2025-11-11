@@ -434,13 +434,13 @@ h2.dashboard-title {
 
 /* Grupo de botones en la tarjeta */
 .card-button-group {
-    display: flex;
+    display: flex; /* Los pone uno al lado del otro */
     gap: 10px;
     margin-top: 10px;
 }
 
 .save-btn, .delete-btn {
-    flex: 1; /* Hacemos que los botones compartan espacio */
+    flex: 1; /* <-- Esta es la línea mágica */
     padding: 10px 15px;
 }
 
@@ -466,4 +466,86 @@ h2.dashboard-title {
 .lead-card.finalized {
     opacity: 0.7;
     border-top-color: var(--accent-success);
+}
+/* ============================================= */
+/* ESTILOS PARA ASIGNACIÓN MÚLTIPLE (NUEVO) */
+/* ============================================= */
+.assignee-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.assigned-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px;
+    background-color: var(--dark-bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    min-height: 40px; /* Altura mínima para que se vea el placeholder */
+}
+
+.unassigned-placeholder {
+    color: #888;
+    font-style: italic;
+    align-self: center;
+    margin-left: 5px;
+}
+
+.assignee-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 500;
+    animation: bounceIn 0.3s;
+}
+
+.remove-assignee {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.remove-assignee:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+.remove-assignee i {
+    font-size: 0.8em;
+    color: white;
+}
+
+.assignee-add-select {
+    padding: 8px;
+    border-radius: 5px;
+    background-color: var(--dark-bg-primary);
+    color: var(--text-light);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    font-size: 0.95em;
+    flex-grow: 1;
+}
+.assignee-add-select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Modificación para que la label se alinee arriba */
+.control-group.align-top {
+    align-items: flex-start;
+}
+.control-group.align-top label {
+    margin-top: 8px; /* Alinear con la primera fila de pills */
 }
