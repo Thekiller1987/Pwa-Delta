@@ -85,6 +85,7 @@ function showCustomConfirm(title, message, details, onConfirm) {
     detailsEl.textContent = details;
 
     overlay.classList.add('visible');
+    modal.classList.add('visible'); // <-- NUEVO 1: Muestra el modal
 
     const newYesBtn = yesBtn.cloneNode(true);
     yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
@@ -94,10 +95,12 @@ function showCustomConfirm(title, message, details, onConfirm) {
     newYesBtn.addEventListener('click', () => {
         onConfirm();
         overlay.classList.remove('visible');
+        modal.classList.remove('visible'); // <-- NUEVO 2: Oculta el modal
     });
 
     newNoBtn.addEventListener('click', () => {
         overlay.classList.remove('visible');
+        modal.classList.remove('visible'); // <-- NUEVO 3: Oculta el modal
     });
 
     if (title.toLowerCase().includes('eliminar')) {

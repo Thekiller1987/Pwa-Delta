@@ -354,7 +354,7 @@ h2.dashboard-title {
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.custom-modal-overlay.visible .custom-modal {
+.custom-modal.visible {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
     pointer-events: auto;
@@ -448,7 +448,6 @@ h2.dashboard-title {
     color: white;
     border: none;
     border-radius: 5px;
-    width: 100%;
     cursor: pointer;
     transition: background-color var(--transition-speed), transform var(--transition-speed);
 }
