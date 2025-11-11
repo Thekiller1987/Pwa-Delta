@@ -73,7 +73,7 @@ header {
     border-bottom: 1px solid var(--border-color);
 }
 .logo-img {
-    height: 100px;
+    height: 140px;
     filter: drop-shadow(0 0 5px var(--primary-color));
     animation: pulse 2s infinite alternate;
 }
