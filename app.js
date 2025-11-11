@@ -5,7 +5,8 @@ const State = {
     isAuthenticated: false,
     userName: '',
     personnel: [],
-    leads: []
+    leads: [], // Almacén principal de todos los leads
+    currentFilter: 'all' // NUEVO: Estado del filtro
 };
 
 const STATUS_OPTIONS = [
@@ -131,12 +132,24 @@ function showDashboard() {
     document.getElementById('dashboard-screen').style.display = 'block';
     document.getElementById('user-name').textContent = State.userName;
     
-    // --- NUEVO: Añadido listener de eventos para la grilla ---
-    // Usamos delegación de eventos para manejar clics en elementos dinámicos
+    // --- LÓGICA DE EVENTOS PRINCIPALES ---
     const grid = document.getElementById('leads-grid');
     grid.addEventListener('click', handleGridClick);
     grid.addEventListener('change', handleGridChange);
     
+    // NUEVO: Listeners para Recarga y Filtros
+    document.getElementById('reload-button').addEventListener('click', handleReload);
+    document.getElementById('filter-container').addEventListener('click', handleFilterClick);
+    
+    document.getElementById('logout-button').addEventListener('click', () => {
+        localStorage.removeItem('deltalink_user');
+        State.isAuthenticated = false;
+        State.userName = '';
+        State.leads = [];
+        State.currentFilter = 'all'; // Resetear filtro al salir
+        showLogin();
+    });
+
     loadDashboardData();
 }
 
@@ -164,14 +177,41 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     }
 });
 
-document.getElementById('logout-button').addEventListener('click', () => {
-    localStorage.removeItem('deltalink_user');
-    State.isAuthenticated = false;
-    State.userName = '';
-    showLogin();
-});
-
 // --- DASHBOARD LOGIC ---
+
+// NUEVO: Botón de recarga
+function handleReload() {
+    const reloadIcon = document.querySelector('#reload-button i');
+    reloadIcon.classList.add('fa-spin'); // Añadir animación de giro
+    loadDashboardData().finally(() => {
+        setTimeout(() => reloadIcon.classList.remove('fa-spin'), 500); // Quitar animación
+    });
+}
+
+// NUEVO: Clic en botones de filtro
+function handleFilterClick(e) {
+    if (!e.target.classList.contains('filter-btn')) return;
+
+    // Quitar 'active' de todos
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    // Añadir 'active' al clicado
+    e.target.classList.add('active');
+
+    State.currentFilter = e.target.dataset.filter;
+    filterAndRenderLeads();
+}
+
+// NUEVO: Lógica de filtrado
+function filterAndRenderLeads() {
+    let filteredLeads = State.leads;
+
+    if (State.currentFilter !== 'all') {
+        filteredLeads = State.leads.filter(lead => lead.estado === State.currentFilter);
+    }
+    
+    renderLeads(filteredLeads); // Renderizar solo los leads filtrados
+}
+
 async function loadDashboardData() {
     const grid = document.getElementById('leads-grid');
     grid.innerHTML = '<div class="loading">Cargando datos... <i class="fas fa-spinner fa-spin"></i></div>';
@@ -183,26 +223,34 @@ async function loadDashboardData() {
         return;
     }
 
+    // 1. Guardar todos los leads en el estado
     State.leads = result.leads.sort((a, b) => {
         const statusOrder = { 'Pendiente': 0, 'En Proceso': 1, 'Finalizado': 2 };
         return (statusOrder[a.estado] || 0) - (statusOrder[b.estado] || 0);
     });
 
     State.personnel = result.personnel;
-    renderLeads(State.leads);
+    
+    // 2. Filtrar y luego renderizar
+    filterAndRenderLeads();
 }
 
-function renderLeads(leads) {
+function renderLeads(leadsToRender) {
     const grid = document.getElementById('leads-grid');
     grid.className = ''; 
     grid.innerHTML = ''; 
 
-    if (leads.length === 0) {
-         grid.innerHTML = '<p class="loading">No hay leads pendientes en la hoja.</p>';
-         return;
+    // MODIFICADO: Mensaje si la lista FILTRADA está vacía
+    if (leadsToRender.length === 0) {
+        if (State.currentFilter === 'all') {
+            grid.innerHTML = '<p class="loading">No hay leads pendientes en la hoja.</p>';
+        } else {
+            grid.innerHTML = `<p class="loading">No se encontraron leads con el estado "${State.currentFilter}".</p>`;
+        }
+        return;
     }
     
-    leads.forEach((lead, index) => {
+    leadsToRender.forEach((lead, index) => {
         const statusInfo = STATUS_OPTIONS.find(s => s.value === lead.estado) || { value: lead.estado || 'Pendiente', label: lead.estado || 'Pendiente', class: 'status-Pendiente' };
         const isFinalized = lead.estado === 'Finalizado';
         
@@ -214,10 +262,7 @@ function renderLeads(leads) {
         const formattedDate = formatLeadDate(lead.fecha);
         const completionDateDisplay = formatDateDisplay(lead.fechaFinalizacion);
         
-        // --- LÓGICA DE ASIGNACIÓN MEJORADA ---
         const assignedPeople = (lead.asignadoA && lead.asignadoA !== 'Sin asignar') ? lead.asignadoA.split(',') : [];
-        
-        // 1. Generar las etiquetas (pills) para las personas ya asignadas
         const pillsHTML = assignedPeople.map(name => `
             <span class="assignee-pill" data-name="${name}">
                 ${name}
@@ -227,15 +272,9 @@ function renderLeads(leads) {
             </span>
         `).join('');
 
-        // 2. Generar el placeholder "Sin asignar" si no hay pills
         const placeholderHTML = assignedPeople.length === 0 ? '<p class="unassigned-placeholder">Sin asignar</p>' : '';
-        
-        // 3. Generar las opciones para el <select> de "Añadir"
-        // (Solo mostrar personas que NO están ya asignadas)
         const availablePeople = State.personnel.filter(name => !assignedPeople.includes(name));
         const optionsHTML = availablePeople.map(name => `<option value="${name}">${name}</option>`).join('');
-        // --- FIN LÓGICA ASIGNACIÓN ---
-
 
         card.innerHTML = `
             <h3>
@@ -291,26 +330,18 @@ function renderLeads(leads) {
         
         grid.appendChild(card);
     });
-    
-    // NOTA: Los event listeners ahora se manejan por delegación en showDashboard()
 }
 
-// --- NUEVO: Manejador de eventos global para la grilla ---
+// --- MANEJADORES DE EVENTOS ---
+
 function handleGridClick(e) {
     const target = e.target;
-
-    // Botón "GUARDAR"
     if (target.classList.contains('save-btn')) {
         handleSave(target);
     }
-    
-    // Botón "ELIMINAR"
     if (target.classList.contains('delete-btn')) {
         handleDelete(target);
     }
-
-    // Botón "X" en una etiqueta (pill)
-    // Usamos .closest() porque el clic puede ser en el <i> o en el <span>
     const removeBtn = target.closest('.remove-assignee');
     if (removeBtn) {
         const name = removeBtn.dataset.name;
@@ -319,36 +350,26 @@ function handleGridClick(e) {
     }
 }
 
-// --- NUEVO: Manejador de eventos para <select> ---
 function handleGridChange(e) {
     const target = e.target;
-
-    // Menú desplegable "Asignar a otra persona"
     if (target.classList.contains('assignee-add-select')) {
         const name = target.value;
-        if (!name) return; // Si seleccionan la opción default
-        
+        if (!name) return;
         const rowId = target.dataset.rowId;
         addAssigneePill(name, rowId);
-        
-        // Resetear el select
         target.value = '';
     }
 }
 
-// --- NUEVA LÓGICA DE UI: Añadir/Quitar Pills ---
+// --- LÓGICA DE UI: Añadir/Quitar Pills ---
 
 function addAssigneePill(name, rowId) {
     const pillsContainer = document.getElementById(`pills-${rowId}`);
     const addSelect = document.querySelector(`.assignee-add-select[data-row-id="${rowId}"]`);
 
-    // 1. Remover el placeholder "Sin asignar"
     const placeholder = pillsContainer.querySelector('.unassigned-placeholder');
-    if (placeholder) {
-        placeholder.remove();
-    }
+    if (placeholder) placeholder.remove();
 
-    // 2. Crear y añadir la nueva etiqueta (pill)
     const pill = document.createElement('span');
     pill.className = 'assignee-pill';
     pill.dataset.name = name;
@@ -360,24 +381,17 @@ function addAssigneePill(name, rowId) {
     `;
     pillsContainer.appendChild(pill);
 
-    // 3. Remover el nombre del <select> de "Añadir"
     const optionToRemove = addSelect.querySelector(`option[value="${name}"]`);
-    if (optionToRemove) {
-        optionToRemove.remove();
-    }
+    if (optionToRemove) optionToRemove.remove();
 }
 
 function removeAssigneePill(name, rowId) {
     const pillsContainer = document.getElementById(`pills-${rowId}`);
     const addSelect = document.querySelector(`.assignee-add-select[data-row-id="${rowId}"]`);
 
-    // 1. Encontrar y remover la etiqueta (pill)
     const pillToRemove = pillsContainer.querySelector(`.assignee-pill[data-name="${name}"]`);
-    if (pillToRemove) {
-        pillToRemove.remove();
-    }
+    if (pillToRemove) pillToRemove.remove();
 
-    // 2. Añadir el nombre de vuelta al <select> de "Añadir"
     const optionExists = addSelect.querySelector(`option[value="${name}"]`);
     if (!optionExists) {
         const newOption = document.createElement('option');
@@ -386,31 +400,20 @@ function removeAssigneePill(name, rowId) {
         addSelect.appendChild(newOption);
     }
 
-    // 3. Si no quedan más pills, mostrar el placeholder "Sin asignar"
     if (pillsContainer.querySelectorAll('.assignee-pill').length === 0) {
         pillsContainer.innerHTML = '<p class="unassigned-placeholder">Sin asignar</p>';
     }
 }
 
-
-// --- LÓGICA DE GUARDAR Y ELIMINAR (ACTUALIZADA) ---
+// --- LÓGICA DE GUARDAR Y ELIMINAR ---
 
 async function handleSave(button) {
     const rowId = button.dataset.rowId;
     const card = button.closest('.lead-card');
     
-    // --- LÓGICA DE GUARDADO MEJORADA ---
-    // 1. Obtener todos los nombres de las etiquetas (pills)
     const pills = card.querySelectorAll('.assignee-pill');
     const assignedNames = Array.from(pills).map(pill => pill.dataset.name);
-
-    let assignedToValue;
-    if (assignedNames.length === 0) {
-        assignedToValue = 'Sin asignar';
-    } else {
-        assignedToValue = assignedNames.join(','); // "User A,User B"
-    }
-    // --- FIN LÓGICA MEJORADA ---
+    let assignedToValue = (assignedNames.length === 0) ? 'Sin asignar' : assignedNames.join(',');
 
     const status = card.querySelector(`#status-${rowId}`).value;
     const completionDate = card.querySelector(`#date-${rowId}`).value;
@@ -439,7 +442,15 @@ async function handleSave(button) {
 
     if (result.success) {
         showMessage('dashboard-message', result.message, 'success');
-        loadDashboardData(); // Recargar todo para asegurar consistencia
+        // MODIFICADO: En lugar de recargar todo, solo actualiza el estado local
+        // y vuelve a filtrar/renderizar.
+        const leadToUpdate = State.leads.find(l => l.rowId == rowId);
+        if (leadToUpdate) {
+            leadToUpdate.asignadoA = assignedToValue;
+            leadToUpdate.estado = status;
+            leadToUpdate.fechaFinalizacion = completionDate;
+        }
+        filterAndRenderLeads(); // Vuelve a renderizar con el filtro actual
     } else {
         showMessage('dashboard-message', result.message, 'error');
         button.textContent = 'Error: Reintentar';
@@ -468,6 +479,11 @@ async function handleDelete(button) {
 
             if (result.success) {
                 showMessage('dashboard-message', result.message, 'success');
+                
+                // MODIFICADO: Elimina el lead del estado global
+                State.leads = State.leads.filter(l => l.rowId != rowId);
+
+                // Anima y elimina la tarjeta
                 card.style.transition = 'opacity 0.3s ease, transform 0.3s ease, height 0.3s ease, padding 0.3s ease, margin 0.3s ease';
                 card.style.opacity = '0';
                 card.style.transform = 'scale(0.9)';
@@ -480,8 +496,9 @@ async function handleDelete(button) {
                 
                 setTimeout(() => {
                     card.remove();
+                    // Vuelve a verificar si la lista filtrada está vacía
                     if (document.querySelectorAll('.lead-card').length === 0) {
-                        renderLeads([]);
+                        filterAndRenderLeads();
                     }
                 }, 350);
                  

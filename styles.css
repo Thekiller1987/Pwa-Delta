@@ -268,7 +268,6 @@ h2.dashboard-title {
     border: none;
     padding: 10px 20px;
     border-radius: 5px;
-    width: 100%;
     margin-top: 10px;
     cursor: pointer;
     transition: background-color var(--transition-speed), transform var(--transition-speed);
@@ -548,4 +547,61 @@ h2.dashboard-title {
 }
 .control-group.align-top label {
     margin-top: 8px; /* Alinear con la primera fila de pills */
+}
+
+/* ============================================= */
+/* ESTILOS PARA RECARGA Y FILTROS (NUEVO) */
+/* ============================================= */
+.reload-btn {
+    background-color: transparent;
+    color: var(--text-light);
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    margin-right: 10px;
+    font-size: 0.9em;
+}
+.reload-btn:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.reload-btn .fa-sync-alt {
+     transition: transform 0.5s ease;
+}
+.reload-btn:hover .fa-sync-alt {
+     transform: rotate(360deg);
+}
+/* Icono giratorio al cargar */
+.reload-btn .fa-sync-alt.fa-spin {
+    animation: fa-spin 1s linear infinite;
+}
+
+.filter-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    flex-wrap: wrap; /* Para móviles */
+}
+.filter-btn {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-light);
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    font-weight: 500;
+    font-size: 0.9em;
+}
+.filter-btn:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+.filter-btn.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    font-weight: 700;
 }

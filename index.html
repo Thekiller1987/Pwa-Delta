@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DELTALINK - Panel de Gestión</title>
+    
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -35,6 +36,9 @@
                 <div class="user-info">
                     Bienvenido, <span id="user-name"></span>
                 </div>
+                <button id="reload-button" class="reload-btn" title="Recargar Datos">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
                 <button id="logout-button" class="logout-btn">Cerrar Sesión</button>
             </div>
         </header>
@@ -43,6 +47,13 @@
             <h2 class="dashboard-title"><i class="fas fa-chart-line"></i> Control de Proyectos y Asignaciones</h2>
             <div id="dashboard-message" class="message-box" style="display: none;"></div>
             
+            <div id="filter-container" class="filter-container">
+                <button class="filter-btn active" data-filter="all">Todos</button>
+                <button class="filter-btn" data-filter="Pendiente">Pendientes</button>
+                <button class="filter-btn" data-filter="En Proceso">En Proceso</button>
+                <button class="filter-btn" data-filter="Finalizado">Finalizados</button>
+            </div>
+
             <div id="leads-grid" class="loading">Cargando Leads...</div>
         </div>
     </div>
