@@ -314,3 +314,156 @@ h2.dashboard-title {
     .logout-btn { margin-left: 0; margin-top: 5px; }
     h2.dashboard-title { font-size: 2em; text-align: center; }
 }
+
+/* ============================================= */
+/* ESTILOS PARA MODAL DE CONFIRMACIÓN (NUEVO) */
+/* ============================================= */
+.custom-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.custom-modal-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.custom-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    width: 90%;
+    max-width: 450px;
+    background-color: var(--dark-bg-secondary);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+    border-top: 5px solid var(--primary-color);
+    z-index: 1001;
+    text-align: center;
+    padding: 30px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.custom-modal-overlay.visible .custom-modal {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto;
+}
+
+.custom-modal h2 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.6em;
+}
+.custom-modal h2 i {
+    margin-right: 10px;
+}
+
+.custom-modal p {
+    font-size: 1.1em;
+    color: var(--text-light);
+    margin-bottom: 10px;
+}
+.custom-modal .details {
+    font-size: 0.9em;
+    color: #aaa;
+    margin-bottom: 25px;
+    word-wrap: break-word;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.modal-btn-cancel {
+    background-color: #6c757d;
+    color: white;
+}
+.modal-btn-cancel:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+}
+.modal-btn-confirm {
+    background-color: #dc3545; /* Rojo peligro para eliminar */
+    color: white;
+}
+.modal-btn-confirm:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+}
+
+/* ============================================= */
+/* ESTILOS PARA SELECT MÚLTIPLE Y BOTÓN ELIMINAR */
+/* ============================================= */
+.management-controls select[multiple] {
+    height: 100px; /* Altura para el selector múltiple */
+    padding: 10px;
+    overflow-y: auto;
+}
+.management-controls select[multiple] option {
+    padding: 5px;
+}
+.management-controls select[multiple] option:checked {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Grupo de botones en la tarjeta */
+.card-button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.save-btn, .delete-btn {
+    flex: 1; /* Hacemos que los botones compartan espacio */
+    padding: 10px 15px;
+}
+
+.delete-btn {
+    background-color: #dc3545; /* Rojo Peligro */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    width: 100%;
+    cursor: pointer;
+    transition: background-color var(--transition-speed), transform var(--transition-speed);
+}
+.delete-btn:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+}
+.delete-btn:disabled {
+    background-color: #5a6268;
+    opacity: 0.5;
+}
+
+/* Estilo para tarjetas finalizadas */
+.lead-card.finalized {
+    opacity: 0.7;
+    border-top-color: var(--accent-success);
+}

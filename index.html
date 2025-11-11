@@ -4,20 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DELTALINK - Panel de Gestión</title>
-    <!-- Configuración PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#1a1a2e">
     <link rel="apple-touch-icon" href="logo.png">
     
-    <!-- Estilos y Fuente -->
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
 
-    <!-- 1. LOGIN SCREEN -->
     <main id="login-screen">
         <div class="login-box">
             <img src="logo.png" alt="Logo DELTALINK" class="logo-img">
@@ -31,7 +28,6 @@
         </div>
     </main>
 
-    <!-- 2. DASHBOARD SCREEN -->
     <div id="dashboard-screen">
         <header>
             <img src="logo.png" alt="Logo DELTALINK" class="logo-img">
@@ -51,7 +47,17 @@
         </div>
     </div>
 
-    <!-- 3. Archivo JavaScript -->
+    <div id="custom-confirm-overlay" class="custom-modal-overlay"></div>
+    <div id="custom-confirm-modal" class="custom-modal">
+        <h2 id="custom-confirm-title"><i class="fas fa-exclamation-triangle"></i> Confirmación</h2>
+        <p id="custom-confirm-message">¿Estás seguro?</p>
+        <p id="custom-confirm-details" class="details"></p>
+        <div class="modal-buttons">
+            <button id="custom-confirm-no" class="modal-btn modal-btn-cancel">Cancelar</button>
+            <button id="custom-confirm-yes" class="modal-btn modal-btn-confirm">Sí, Confirmar</button>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
